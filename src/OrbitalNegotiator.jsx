@@ -265,7 +265,7 @@ function buildSpecularTexture(){
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export default function OrbitalNegotiator(){
+export default function OrbitalNegotiator({ onBack }){
   const mountRef=useRef(null);
   const satsRef=useRef(initSats());
   const animRef=useRef(null);
@@ -820,9 +820,37 @@ export default function OrbitalNegotiator(){
 
       {/* Top bar */}
       <header style={css.topBar}>
-        <div style={css.topLeft}>
-          <span style={css.sysLabel}>ORBITAL NEGOTIATOR</span>
-          <span style={css.sysVersion}>STM PROTOCOL · v4 · 20-SAT · 3D GLOBE</span>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          {onBack && (
+            <button 
+              onClick={onBack}
+              style={{
+                background: "rgba(91, 168, 208, 0.08)",
+                border: `1px solid ${T.border}`,
+                color: T.data,
+                fontFamily: F.mono,
+                fontSize: "10px",
+                padding: "6px 12px",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                marginRight: "4px"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(91, 168, 208, 0.18)";
+                e.target.style.borderColor = T.data;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(91, 168, 208, 0.08)";
+                e.target.style.borderColor = T.border;
+              }}
+            >
+              ← RETURN TO PRODUCT HOME
+            </button>
+          )}
+          <div style={css.topLeft}>
+            <span style={css.sysLabel}>ORBITAL NEGOTIATOR</span>
+            <span style={css.sysVersion}>STM PROTOCOL · v4 · 20-SAT · 3D GLOBE</span>
+          </div>
         </div>
         <div style={css.topRight}>
           <StatusPill label="ENGINE" value={paused?"PAUSED":"NOMINAL"} color={paused?T.alert:T.ok}/>
