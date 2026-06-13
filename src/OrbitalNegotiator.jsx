@@ -82,13 +82,15 @@ async function makeLedgerEntry(sA,sB,winner,loser,bA,bB){
 
 // ─── Earth textures ───────────────────────────────────────────────────────────
 function buildEarthTexture(){
-  const W=2048,H=1024,cv=document.createElement("canvas");
-  cv.width=W; cv.height=H;
-  const ctx=cv.getContext("2d");
-  const ocean=ctx.createLinearGradient(0,0,0,H);
-  ocean.addColorStop(0,"#0a1f3a"); ocean.addColorStop(0.5,"#0e2d52"); ocean.addColorStop(1,"#071525");
-  ctx.fillStyle=ocean; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="#2a4a22";
+  const W=2048,H=1024;
+  const scratch=document.createElement("canvas");
+  scratch.width=W; scratch.height=H;
+  const sCtx=scratch.getContext("2d");
+  sCtx.fillStyle="#000000";
+  sCtx.fillRect(0,0,W,H);
+  sCtx.fillStyle="#ffffff";
+  
+  // Continent outlines
   [
     [[480,180],[580,160],[640,200],[660,280],[620,360],[560,400],[500,380],[440,320],[420,260],[440,200]],
     [[530,420],[570,400],[610,450],[590,540],[540,580],[500,560],[490,500],[510,450]],
@@ -99,44 +101,166 @@ function buildEarthTexture(){
     [[590,110],[650,100],[680,140],[650,180],[600,190],[570,160]],
     [[300,930],[700,920],[1100,925],[1500,920],[1800,928],[2000,940],[2048,960],[0,960]],
   ].forEach(pts=>{
-    ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
-    pts.forEach(p=>ctx.lineTo(p[0],p[1])); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle="#3a6a30"; ctx.lineWidth=2; ctx.stroke();
+    sCtx.beginPath(); sCtx.moveTo(pts[0][0],pts[0][1]);
+    pts.forEach(p=>sCtx.lineTo(p[0],p[1])); sCtx.closePath(); sCtx.fill();
   });
-  ctx.fillStyle="#385030";
+  
+  // Islands
   [[900,200,60,20],[1050,180,40,15],[800,290,30,12],[530,230,25,10]].forEach(([x,y,w,h])=>{
-    ctx.beginPath(); ctx.ellipse(x,y,w,h,0.4,0,Math.PI*2); ctx.fill();
+    sCtx.beginPath(); sCtx.ellipse(x,y,w,h,0.4,0,Math.PI*2); sCtx.fill();
   });
-  [[0,80],[H-90,90]].forEach(([y,h])=>{
-    const g=ctx.createLinearGradient(0,y,0,y+h);
-    g.addColorStop(0,"rgba(220,235,250,0.9)"); g.addColorStop(1,"rgba(180,210,240,0)");
-    ctx.fillStyle=g; ctx.fillRect(0,y,W,h);
-  });
-  ctx.fillStyle="rgba(255,240,180,0.5)";
+
+  const cv=document.createElement("canvas");
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d");
+  
+  // Tactical deep space ocean background
+  ctx.fillStyle="#040712";
+  ctx.fillRect(0,0,W,H);
+  
+  // Subtle lat/lon grids in oceans
+  ctx.strokeStyle="rgba(91, 168, 208, 0.08)";
+  ctx.lineWidth=1;
+  for(let x=0; x<W; x+=32){
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+  }
+  for(let y=0; y<H; y+=32){
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+  }
+  
+  const imgData=sCtx.getImageData(0,0,W,H);
+  const data=imgData.data;
+  
+  // Draw green glowing vector dots on land
+  ctx.fillStyle="#47b881";
+  for(let y=0; y<H; y+=6){
+    for(let x=0; x<W; x+=6){
+      const idx=(y*W+x)*4;
+      if(data[idx]>128){
+        ctx.beginPath();
+        ctx.arc(x,y,1.5,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // Draw some tactical marker circles
+  ctx.fillStyle="rgba(91, 168, 208, 0.4)";
   [[490,220],[820,200],[870,195],[900,210],[780,220],[1060,200],[1120,210],[550,460]].forEach(([x,y])=>{
-    ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
   });
+
   return new THREE.CanvasTexture(cv);
 }
+
 function buildNightTexture(){
   const W=1024,H=512,cv=document.createElement("canvas");
   cv.width=W; cv.height=H;
   const ctx=cv.getContext("2d");
-  ctx.fillStyle="#000008"; ctx.fillRect(0,0,W,H);
-  [[240,110],[415,105],[435,98],[450,108],[390,110],[530,100],[560,105],[275,230],[600,340],[700,320]].forEach(([x,y])=>{
-    const g=ctx.createRadialGradient(x,y,0,x,y,6);
-    g.addColorStop(0,"rgba(255,240,150,0.9)"); g.addColorStop(1,"rgba(255,220,100,0)");
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#010206"; ctx.fillRect(0,0,W,H);
+
+  // Re-render continent mask at lower resolution
+  const scratch=document.createElement("canvas");
+  scratch.width=2048; scratch.height=1024;
+  const sCtx=scratch.getContext("2d");
+  sCtx.fillStyle="#000"; sCtx.fillRect(0,0,2048,1024);
+  sCtx.fillStyle="#fff";
+  [
+    [[480,180],[580,160],[640,200],[660,280],[620,360],[560,400],[500,380],[440,320],[420,260],[440,200]],
+    [[530,420],[570,400],[610,450],[590,540],[540,580],[500,560],[490,500],[510,450]],
+    [[780,170],[840,160],[870,190],[850,230],[800,250],[760,240],[750,200]],
+    [[780,270],[840,260],[880,320],[870,420],[820,500],[770,510],[730,460],[720,380],[740,300]],
+    [[860,150],[1060,130],[1180,160],[1240,220],[1200,300],[1100,340],[980,320],[900,280],[850,220]],
+    [[1100,440],[1180,420],[1220,460],[1210,520],[1160,540],[1110,520],[1090,480]],
+    [[590,110],[650,100],[680,140],[650,180],[600,190],[570,160]],
+    [[300,930],[700,920],[1100,925],[1500,920],[1800,928],[2000,940],[2048,960],[0,960]],
+  ].forEach(pts=>{
+    sCtx.beginPath(); sCtx.moveTo(pts[0][0],pts[0][1]);
+    pts.forEach(p=>sCtx.lineTo(p[0],p[1])); sCtx.closePath(); sCtx.fill();
   });
+  [[900,200,60,20],[1050,180,40,15],[800,290,30,12],[530,230,25,10]].forEach(([x,y,w,h])=>{
+    sCtx.beginPath(); sCtx.ellipse(x,y,w,h,0.4,0,Math.PI*2); sCtx.fill();
+  });
+
+  const mCv=document.createElement("canvas");
+  mCv.width=W; mCv.height=H;
+  const mCtx=mCv.getContext("2d");
+  mCtx.drawImage(scratch, 0, 0, 2048, 1024, 0, 0, W, H);
+  const mData=mCtx.getImageData(0,0,W,H).data;
+
+  // Draw golden city lights on land
+  ctx.fillStyle="rgba(255, 185, 60, 0.85)";
+  for(let y=0; y<H; y+=10){
+    for(let x=0; x<W; x+=10){
+      const idx=(y*W+x)*4;
+      if(mData[idx]>128){
+        const noise = Math.random();
+        if(noise > 0.62){
+          ctx.beginPath();
+          ctx.arc(x + (Math.random()-0.5)*4, y + (Math.random()-0.5)*4, 1.2, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  // Draw glowing metropolitan hubs
+  [[240,110],[415,105],[435,98],[450,108],[390,110],[530,100],[560,105],[275,230],[600,340],[700,320]].forEach(([x,y])=>{
+    const g=ctx.createRadialGradient(x,y,0,x,y,8);
+    g.addColorStop(0,"rgba(255,230,130,0.95)");
+    g.addColorStop(0.3,"rgba(255,180,80,0.6)");
+    g.addColorStop(1,"rgba(255,180,80,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2); ctx.fill();
+  });
+
   return new THREE.CanvasTexture(cv);
 }
+
 function buildSpecularTexture(){
   const W=512,H=256,cv=document.createElement("canvas");
   cv.width=W; cv.height=H;
   const ctx=cv.getContext("2d");
-  ctx.fillStyle="#667788"; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="#111";
-  [[240,90,50,30],[265,200,40,45],[390,85,65,35],[440,150,30,30],[550,75,90,30],[550,210,50,30]].forEach(([x,y,w,h])=>{ctx.fillRect(x,y,w,h);});
+  // Fill with specularity (oceans shiny)
+  ctx.fillStyle="#ffffff";
+  ctx.fillRect(0,0,W,H);
+  
+  // Render land as black (land matte)
+  const scratch=document.createElement("canvas");
+  scratch.width=2048; scratch.height=1024;
+  const sCtx=scratch.getContext("2d");
+  sCtx.fillStyle="#000"; sCtx.fillRect(0,0,2048,1024);
+  sCtx.fillStyle="#fff";
+  [
+    [[480,180],[580,160],[640,200],[660,280],[620,360],[560,400],[500,380],[440,320],[420,260],[440,200]],
+    [[530,420],[570,400],[610,450],[590,540],[540,580],[500,560],[490,500],[510,450]],
+    [[780,170],[840,160],[870,190],[850,230],[800,250],[760,240],[750,200]],
+    [[780,270],[840,260],[880,320],[870,420],[820,500],[770,510],[730,460],[720,380],[740,300]],
+    [[860,150],[1060,130],[1180,160],[1240,220],[1200,300],[1100,340],[980,320],[900,280],[850,220]],
+    [[1100,440],[1180,420],[1220,460],[1210,520],[1160,540],[1110,520],[1090,480]],
+    [[590,110],[650,100],[680,140],[650,180],[600,190],[570,160]],
+    [[300,930],[700,920],[1100,925],[1500,920],[1800,928],[2000,940],[2048,960],[0,960]],
+  ].forEach(pts=>{
+    sCtx.beginPath(); sCtx.moveTo(pts[0][0],pts[0][1]);
+    pts.forEach(p=>sCtx.lineTo(p[0],p[1])); sCtx.closePath(); sCtx.fill();
+  });
+  [[900,200,60,20],[1050,180,40,15],[800,290,30,12],[530,230,25,10]].forEach(([x,y,w,h])=>{
+    sCtx.beginPath(); sCtx.ellipse(x,y,w,h,0.4,0,Math.PI*2); sCtx.fill();
+  });
+
+  ctx.drawImage(scratch, 0, 0, 2048, 1024, 0, 0, W, H);
+  
+  const imgData=ctx.getImageData(0,0,W,H);
+  const data=imgData.data;
+  for(let i=0; i<data.length; i+=4){
+    const isLand = data[i] > 128;
+    if(isLand){
+      data[i] = 10; data[i+1] = 10; data[i+2] = 10;
+    } else {
+      data[i] = 230; data[i+1] = 240; data[i+2] = 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
   return new THREE.CanvasTexture(cv);
 }
 
@@ -262,7 +386,7 @@ export default function OrbitalNegotiator(){
       new THREE.MeshPhongMaterial({
         map:buildEarthTexture(),specularMap:buildSpecularTexture(),
         specular:new THREE.Color(0x224466),shininess:28,
-        emissiveMap:buildNightTexture(),emissive:new THREE.Color(0xffffff),emissiveIntensity:0.18,
+        emissiveMap:buildNightTexture(),emissive:new THREE.Color(0xffffff),emissiveIntensity:0.45,
       })
     );
     scene.add(earth);
@@ -271,10 +395,31 @@ export default function OrbitalNegotiator(){
       new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:0.12,depthWrite:false})
     );
     scene.add(clouds);
-    scene.add(new THREE.Mesh(
-      new THREE.SphereGeometry(1.1,48,48),
-      new THREE.MeshPhongMaterial({color:0x2255AA,transparent:true,opacity:0.11,side:THREE.BackSide,depthWrite:false})
-    ));
+
+    // Rayleigh Atmospheric Scattering Glow
+    const glowMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.78 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.8);
+          vec3 atmosphereColor = vec3(0.22, 0.58, 0.95);
+          gl_FragColor = vec4(atmosphereColor, 1.0) * intensity;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false
+    });
+    const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(1.12, 64, 64), glowMat);
+    scene.add(glowMesh);
 
     // Grid lines
     const gridMat=new THREE.LineBasicMaterial({color:0x1A3050,transparent:true,opacity:0.22});
@@ -518,18 +663,29 @@ export default function OrbitalNegotiator(){
       satMeshes.forEach((mesh,i)=>{
         const isLocked=i===lk;
         const mat=mesh.material;
+        const dist=camera.position.distanceTo(mesh.position);
+        
+        // Scale satellites with zoom/camera distance so they remain readable
+        const distScale=Math.max(0.6, Math.min(2.5, dist * 0.22));
+
         if(isLocked){
           const pulse=Math.sin(Date.now()*0.007);
           mat.emissiveIntensity=3.0+pulse*0.8; // very strong pulsing glow
           mat.color.set(0x00ffe0);   // bright cyan-green highlight
           mat.emissive.set(0x00ffe0);
-          mesh.scale.setScalar(2.4+pulse*0.3); // pulsing size
+          mesh.scale.setScalar(distScale * (2.4+pulse*0.3)); // pulsing size
         } else {
           mat.color.set(T.sat[i]);
           mat.emissive.set(T.sat[i]);
           mat.emissiveIntensity=0.7;
-          mesh.scale.setScalar(1.0);
+          mesh.scale.setScalar(distScale);
         }
+
+        // Dynamically fade trail and prediction lines based on camera distance
+        const fade = Math.max(0.12, Math.min(0.55, 0.40 * (3.8 / dist)));
+        if(trailLines[i]) trailLines[i].material.opacity = fade;
+        if(predictLines[i]) predictLines[i].material.opacity = fade * 0.35;
+
         // Lock ring — bright cyan spinning ring
         if(isLocked) lockRingAngle[i]+=0.05;
         lockRings[i].position.copy(mesh.position);
@@ -538,6 +694,7 @@ export default function OrbitalNegotiator(){
         if(isLocked){
           lockRings[i].material.color.set(0x00ffe0);
           lockRings[i].material.opacity=0.95+Math.sin(Date.now()*0.005)*0.05;
+          lockRings[i].scale.setScalar(distScale * 1.0);
         } else {
           lockRings[i].material.opacity=0;
         }
@@ -549,7 +706,7 @@ export default function OrbitalNegotiator(){
             const p2=Math.sin(Date.now()*0.003)*0.5+0.5;
             outerRings[i].material.opacity=0.35+p2*0.4;
             outerRings[i].material.color.set(0x00ffcc);
-            outerRings[i].scale.setScalar(1.5+p2*1.2);
+            outerRings[i].scale.setScalar(distScale * (1.5+p2*1.2));
           } else {
             outerRings[i].material.opacity=0;
           }
@@ -780,7 +937,7 @@ export default function OrbitalNegotiator(){
         <div style={css.rightCol}>
 
           {/* Satellite telemetry list */}
-          <div style={css.panel}>
+          <Panel outlineColor={T.borderActive}>
             <PanelHeader label="SATELLITE TELEMETRY" sub={`CLICK NAME FOR MANEUVER HISTORY · ${conjunctions.length} CONJUNCTIONS ACTIVE`}/>
             <div style={{maxHeight:270,overflowY:"auto"}}>
               <table style={css.table}>
@@ -846,11 +1003,11 @@ export default function OrbitalNegotiator(){
                 </tbody>
               </table>
             </div>
-          </div>
+          </Panel>
 
           {/* Maneuver History panel */}
           {histSatId!==null&&(
-            <div style={{...css.panel,border:`1px solid ${T.alert}`,animation:"fadeInDown 0.2s ease-out"}}>
+            <Panel outlineColor={T.alert} style={{animation:"fadeInDown 0.2s ease-out"}}>
               <PanelHeader
                 label={`MANEUVER HISTORY — ${DESIGNATIONS[histSatId]}`}
                 sub={`${histSatHistory.length} EVENTS · trajectory replay available`}
@@ -927,11 +1084,11 @@ export default function OrbitalNegotiator(){
                   })}
                 </div>
               )}
-            </div>
+            </Panel>
           )}
 
           {/* Pricing engine */}
-          <div style={css.panel}>
+          <Panel outlineColor={T.borderActive}>
             <PanelHeader label="PRICING ENGINE" sub="DETERMINISTIC BID FORMULA"/>
             <div style={css.formulaBlock}>
               <div style={css.formulaEq}>C<sub>bid</sub> = α·(Δv/M<sub>prop</sub>) + β·P<sub>miss</sub> + γ·T<sub>rec</sub></div>
@@ -942,17 +1099,21 @@ export default function OrbitalNegotiator(){
               </div>
               <div style={css.formulaRule}>Higher bid retains orbit · Lower bid executes maneuver</div>
             </div>
+
+            {/* Live telemetry bid history chart */}
+            <BidHistoryChart ledger={ledger} />
+
             {conjunctions.length===0
               ?<EmptyState msg="No active conjunctions — monitoring 20 satellites"/>
               :conjunctions.slice(0,4).map((c,i)=><ConjRow key={i} c={c} sats={satSnap}/>)
             }
-          </div>
+          </Panel>
 
         </div>
       </div>
 
       {/* Ledger */}
-      <div style={{...css.panel,margin:"0 16px 16px"}}>
+      <Panel outlineColor={T.borderActive} style={{margin:"0 16px 16px"}}>
         <PanelHeader label="AUDIT LEDGER" sub="SHA-256 CRYPTOGRAPHIC MANEUVER LOG · TAMPER-EVIDENT"/>
         {ledger.length===0
           ?<EmptyState msg="No maneuver agreements recorded yet — system monitoring"/>
@@ -976,7 +1137,7 @@ export default function OrbitalNegotiator(){
             ))}
           </div>
         }
-      </div>
+      </Panel>
     </div>
   );
 }
@@ -1041,6 +1202,25 @@ function TrajectoryViz({satId,events,satColor}){
     const ctx=cv.getContext("2d");
     let frame=0;
     let rafId=0;
+
+    function drawArrow(ctx, x, y, dx, dy, color) {
+      const angle = Math.atan2(dy, dx);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+      
+      // Arrow head
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x + dx, y + dy);
+      ctx.lineTo(x + dx - 4 * Math.cos(angle - Math.PI/6), y + dy - 4 * Math.sin(angle - Math.PI/6));
+      ctx.lineTo(x + dx - 4 * Math.cos(angle + Math.PI/6), y + dy - 4 * Math.sin(angle + Math.PI/6));
+      ctx.closePath();
+      ctx.fill();
+    }
 
     const onMouseDown=e=>{
       const rect=cv.getBoundingClientRect();
@@ -1238,6 +1418,40 @@ function TrajectoryViz({satId,events,satColor}){
       ctx.fillText("EARTH",ep.px,ep.py);
       ctx.textBaseline="alphabetic";
 
+      // Concentric range rings around Earth
+      ctx.strokeStyle = "rgba(91, 168, 208, 0.12)";
+      ctx.lineWidth = 0.5;
+      [45, 90, 135, 180, 225].forEach(r => {
+        const ringRad = r * (vZoom/82);
+        ctx.beginPath();
+        ctx.arc(ep.px, ep.py, ringRad, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.fillStyle = "rgba(91, 168, 208, 0.35)";
+        ctx.font = "6px 'IBM Plex Mono',monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(`${(r * 150).toFixed(0)} km`, ep.px + ringRad + 2, ep.py - 2);
+      });
+      
+      // Radar crosshairs
+      ctx.save();
+      ctx.strokeStyle = "rgba(91, 168, 208, 0.06)";
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(30, ep.py); ctx.lineTo(W - 30, ep.py);
+      ctx.moveTo(ep.px, 20); ctx.lineTo(ep.px, H - 20);
+      ctx.stroke();
+      ctx.restore();
+
+      // Sweep line
+      const sweepAngle = (frame * 0.012) % (Math.PI * 2);
+      ctx.strokeStyle = "rgba(91, 168, 208, 0.14)";
+      ctx.lineWidth = 1.0;
+      ctx.beginPath();
+      ctx.moveTo(ep.px, ep.py);
+      ctx.lineTo(ep.px + 280 * Math.cos(sweepAngle), ep.py + 280 * Math.sin(sweepAngle));
+      ctx.stroke();
+
       if(!events||events.length===0){
         ctx.fillStyle="#4A6080"; ctx.font="10px 'IBM Plex Mono',monospace";
         ctx.textAlign="center";
@@ -1307,7 +1521,7 @@ function TrajectoryViz({satId,events,satColor}){
       otherPts.forEach((p,pi)=>{const{px,py}=proj(p.x,p.y,p.z);pi===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
       ctx.closePath(); ctx.stroke(); ctx.restore();
 
-      // Trail history — grows dynamically as sat approaches conjunction, fully drawn after
+      // Trail history
       const trailMain=isMain?ev.trailA:ev.trailB;
       const trailOther=isMain?ev.trailB:ev.trailA;
       const trailProgress = tau < 0 ? (tau + 5) / 5 : 1.0;
@@ -1325,7 +1539,7 @@ function TrajectoryViz({satId,events,satColor}){
         ctx.restore();
       });
 
-      // Animated sat dots along orbits (using phase-aligned positioning + dynamic warp)
+      // Animated sat dots along orbits
       const phaseM=mainOrbit.phase+k*0.005*(1/(mainOrbit.radius*mainOrbit.radius));
       const phaseO=otherOrbit.phase+k*0.005*(1/(otherOrbit.radius*otherOrbit.radius));
 
@@ -1337,7 +1551,7 @@ function TrajectoryViz({satId,events,satColor}){
       const mPos=getPosAtPhase(mainParams,phaseM);
       const oPos=getPosAtPhase(otherParams,phaseO);
 
-      // Project to 2D to measure distance and offset labels to prevent overlaps
+      // Project to 2D
       const p1=proj(mPos.x,mPos.y,mPos.z);
       const p2=proj(oPos.x,oPos.y,oPos.z);
       const dx=p2.px-p1.px;
@@ -1363,8 +1577,14 @@ function TrajectoryViz({satId,events,satColor}){
         }
       }
 
-      [[mPos,satColor,DESIGNATIONS[satId],ev.loser===satId,true,label1Align,label1OffX],
-       [oPos,otherColor,otherDesig,ev.loser===otherId,false,label2Align,label2OffX]].forEach(([pos,col,desig,isLoser,isSel,align,offX])=>{
+      // Calculate tangent offsets for velocity vectors
+      const nextPosM = getPosAtPhase(mainParams, phaseM + 0.04);
+      const pNextM = proj(nextPosM.x, nextPosM.y, nextPosM.z);
+      const nextPosO = getPosAtPhase(otherParams, phaseO + 0.04);
+      const pNextO = proj(nextPosO.x, nextPosO.y, nextPosO.z);
+
+      [[mPos,satColor,DESIGNATIONS[satId],ev.loser===satId,true,label1Align,label1OffX,p1,pNextM],
+       [oPos,otherColor,otherDesig,ev.loser===otherId,false,label2Align,label2OffX,p2,pNextO]].forEach(([pos,col,desig,isLoser,isSel,align,offX,ptCur,ptNext])=>{
         if(!pos) return;
         const{px,py}=proj(pos.x,pos.y,pos.z);
         // Outer glow ring
@@ -1380,7 +1600,16 @@ function TrajectoryViz({satId,events,satColor}){
         ctx.fillStyle="rgba(255,255,255,0.9)";
         ctx.beginPath(); ctx.arc(px,py,isSel?2:1.5,0,Math.PI*2); ctx.fill();
 
-        // Thruster exhaust flame effect for maneuvering satellite during execution
+        // Draw velocity vector arrow (HUD styling)
+        const vx = ptNext.px - ptCur.px;
+        const vy = ptNext.py - ptCur.py;
+        const vlen = Math.sqrt(vx*vx + vy*vy) || 1.0;
+        const arrowSize = 14;
+        const adx = (vx / vlen) * arrowSize;
+        const ady = (vy / vlen) * arrowSize;
+        drawArrow(ctx, ptCur.px, ptCur.py, adx, ady, col);
+
+        // Thruster exhaust flame effect
         if(isLoser && tau > 0 && tau < 3.33){
           ctx.fillStyle="#FF5500";
           ctx.beginPath();
@@ -1391,7 +1620,7 @@ function TrajectoryViz({satId,events,satColor}){
           ctx.fill();
         }
 
-        // Label (display full name, no truncation, with anti-overlap alignment)
+        // Label
         ctx.save(); ctx.fillStyle=col; ctx.font=`bold 8px 'IBM Plex Mono',monospace`;
         ctx.textAlign=align;
         ctx.fillText(desig,px+offX,py-3);
@@ -1413,7 +1642,7 @@ function TrajectoryViz({satId,events,satColor}){
         ctx.restore();
       });
 
-      // Conjunction point marker — midpoint of closest approach
+      // Conjunction point marker
       if(trailMain&&trailMain.length>0&&trailOther&&trailOther.length>0){
         const mEnd=trailMain[trailMain.length-1];
         const oEnd=trailOther[trailOther.length-1];
@@ -1466,7 +1695,7 @@ function TrajectoryViz({satId,events,satColor}){
         ctx.restore();
       }
 
-      // Legend bar (display full names, no truncation)
+      // Legend bar
       ctx.fillStyle="rgba(8,12,18,0.82)";
       ctx.fillRect(6,H-34,W-12,28);
       ctx.strokeStyle="#1A2A3E"; ctx.lineWidth=0.5;
@@ -1588,6 +1817,78 @@ function TrajectoryViz({satId,events,satColor}){
   );
 }
 
+function Panel({ children, style, outlineColor }) {
+  const col = outlineColor || "rgba(91, 168, 208, 0.35)";
+  return (
+    <div style={{ ...css.panel, ...style }}>
+      {/* Corner notches */}
+      <div style={{ ...css.corner, top: -1, left: -1, borderLeft: `2px solid ${col}`, borderTop: `2px solid ${col}` }} />
+      <div style={{ ...css.corner, top: -1, right: -1, borderRight: `2px solid ${col}`, borderTop: `2px solid ${col}` }} />
+      <div style={{ ...css.corner, bottom: -1, left: -1, borderLeft: `2px solid ${col}`, borderBottom: `2px solid ${col}` }} />
+      <div style={{ ...css.corner, bottom: -1, right: -1, borderRight: `2px solid ${col}`, borderBottom: `2px solid ${col}` }} />
+      {children}
+    </div>
+  );
+}
+
+function BidHistoryChart({ ledger }) {
+  if (ledger.length < 2) {
+    return (
+      <div style={{ height: 44, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: T.inkSecondary, fontFamily: F.mono }}>
+        AWAITING BID DATA FOR HISTORICAL TELEMETRY CHART...
+      </div>
+    );
+  }
+  
+  const width = 290;
+  const height = 48;
+  const padding = 6;
+  const points = [...ledger].reverse();
+  const maxBid = Math.max(...points.map(e => Math.max(parseFloat(e.p.bidA), parseFloat(e.p.bidB))), 5.0);
+  const minBid = Math.min(...points.map(e => Math.min(parseFloat(e.p.bidA), parseFloat(e.p.bidB))), 0.0);
+  const range = maxBid - minBid || 1.0;
+  
+  const getX = (idx) => padding + (idx / (points.length - 1)) * (width - padding * 2);
+  const getY = (val) => height - padding - ((val - minBid) / range) * (height - padding * 2);
+  
+  let pathA = "";
+  let pathB = "";
+  
+  points.forEach((e, idx) => {
+    const x = getX(idx);
+    const yA = getY(parseFloat(e.p.bidA));
+    const yB = getY(parseFloat(e.p.bidB));
+    
+    if (idx === 0) {
+      pathA = `M ${x} ${yA}`;
+      pathB = `M ${x} ${yB}`;
+    } else {
+      pathA += ` L ${x} ${yA}`;
+      pathB += ` L ${x} ${yB}`;
+    }
+  });
+  
+  return (
+    <div style={{ padding: "8px 12px 6px", borderBottom: `1px solid ${T.border}`, background: "rgba(10, 16, 26, 0.45)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, fontFamily: F.mono, color: T.inkSecondary, marginBottom: 4, letterSpacing: "0.06em" }}>
+        <span>LIVE BIDDING TELEMETRY</span>
+        <span style={{ color: T.ok }}>● WINNER  <span style={{ color: T.alert }}>● LOSER</span></span>
+      </div>
+      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: "block", background: "rgba(0,0,0,0.25)", border: `1px solid ${T.border}` }}>
+        <line x1={0} y1={height/2} x2={width} y2={height/2} stroke={T.border} strokeWidth={0.5} strokeDasharray="2,4" />
+        <path d={pathA} fill="none" stroke={T.ok} strokeWidth={1.5} />
+        <path d={pathB} fill="none" stroke={T.alert} strokeWidth={1.5} strokeDasharray="3,2" />
+        {points.map((e, idx) => (
+          <g key={idx}>
+            <circle cx={getX(idx)} cy={getY(parseFloat(e.p.bidA))} r={2} fill={T.ok} />
+            <circle cx={getX(idx)} cy={getY(parseFloat(e.p.bidB))} r={2} fill={T.alert} />
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function PanelHeader({label,sub,children}){
   return(
@@ -1661,7 +1962,7 @@ function EmptyState({msg}){return <div style={css.empty}>{msg}</div>;}
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const css={
   root:{background:T.bg,minHeight:"100vh",color:T.inkPrimary,fontFamily:F.cond,fontSize:13,lineHeight:1.4},
-  topBar:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px",height:48,borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0},
+  topBar:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px",height:48,borderBottom:`1px solid ${T.border}`,background:"rgba(14, 21, 32, 0.85)",backdropFilter:"blur(10px)",flexShrink:0},
   topLeft:{display:"flex",flexDirection:"column",gap:1},
   sysLabel:{fontFamily:F.cond,fontWeight:700,fontSize:14,letterSpacing:"0.12em",color:T.inkPrimary},
   sysVersion:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary,letterSpacing:"0.08em"},
@@ -1672,6 +1973,7 @@ const css={
   main:{display:"flex",gap:16,padding:16,flexWrap:"wrap",alignItems:"flex-start"},
   canvasCol:{display:"flex",flexDirection:"column",gap:0,flexShrink:0},
   globeWrap:{width:600,height:560,background:T.bg,cursor:"grab",overflow:"hidden",display:"block"},
+  corner:{position:"absolute",width:6,height:6,pointerEvents:"none"},
 
   // Toast INSIDE the globe wrapper — no layout impact
   toast:{
@@ -1692,28 +1994,35 @@ const css={
 
   satCard:{
     position:"absolute",zIndex:15,minWidth:210,
-    background:hexRgba("#0E1520",0.97),
+    background:"rgba(14, 21, 32, 0.92)",
     border:`1px solid ${T.borderActive}`,
-    backdropFilter:"blur(6px)",
+    backdropFilter:"blur(12px)",
     animation:"fadeInDown 0.18s ease-out",
-    boxShadow:`0 0 20px rgba(91,168,208,0.15)`,
+    boxShadow:`0 8px 32px 0 rgba(0, 0, 0, 0.45)`,
   },
-  satCardHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderBottom:`1px solid ${T.border}`,background:T.surfaceRaised},
+  satCardHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderBottom:`1px solid ${T.border}`,background:"rgba(19, 29, 44, 0.7)"},
   satCardBody:{padding:"8px 10px",display:"flex",flexDirection:"column",gap:3},
   satCardFoot:{padding:"4px 10px",borderTop:`1px solid ${T.border}`,fontFamily:F.mono,fontSize:8,color:T.inkSecondary},
   closeBtn:{background:"transparent",border:"none",color:T.inkSecondary,cursor:"pointer",fontSize:11,padding:"0 2px",lineHeight:1},
 
-  controlsBar:{display:"flex",alignItems:"center",gap:0,border:`1px solid ${T.border}`,borderTop:"none",background:T.surfaceRaised},
+  controlsBar:{display:"flex",alignItems:"center",gap:0,border:`1px solid ${T.border}`,borderTop:"none",background:"rgba(19, 29, 44, 0.65)",backdropFilter:"blur(8px)"},
   sliderRow:{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",flex:1},
   sliderDivider:{width:1,height:28,background:T.border,flexShrink:0},
   sliderLabel:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary,letterSpacing:"0.1em",whiteSpace:"nowrap",minWidth:42},
   sliderVal:{fontFamily:F.mono,fontSize:11,fontWeight:600,minWidth:36,textAlign:"right"},
-  canvasFooter:{display:"flex",gap:14,padding:"5px 10px",background:T.surface,border:`1px solid ${T.border}`,borderTop:"none"},
+  canvasFooter:{display:"flex",gap:14,padding:"5px 10px",background:"rgba(14, 21, 32, 0.8)",border:`1px solid ${T.border}`,borderTop:"none"},
   footNote:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary},
 
   rightCol:{flex:1,minWidth:320,display:"flex",flexDirection:"column",gap:10},
-  panel:{background:T.surface,border:`1px solid ${T.border}`},
-  panelHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 12px",borderBottom:`1px solid ${T.border}`,background:T.surfaceRaised,gap:8},
+  panel:{
+    position:"relative",
+    background:"rgba(14, 21, 32, 0.65)",
+    backdropFilter:"blur(12px)",
+    border:`1px solid rgba(26, 42, 62, 0.35)`,
+    boxShadow:"0 8px 32px 0 rgba(0, 0, 0, 0.35)",
+    transition:"border-color 0.22s ease",
+  },
+  panelHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 12px",borderBottom:`1px solid rgba(26, 42, 62, 0.35)`,background:"rgba(19, 29, 44, 0.7)",gap:8},
   panelLabel:{fontFamily:F.cond,fontWeight:700,fontSize:11,letterSpacing:"0.12em",color:T.inkPrimary},
   panelSub:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary,marginTop:1},
   panelControls:{display:"flex",gap:5,flexWrap:"wrap",flexShrink:0},
@@ -1721,19 +2030,19 @@ const css={
   tinyBtn:{background:"transparent",border:`1px solid ${T.border}`,fontFamily:F.mono,fontSize:10,padding:"1px 4px",cursor:"pointer",borderRadius:0,lineHeight:1.2},
 
   table:{width:"100%",borderCollapse:"collapse"},
-  th:{padding:"4px 8px",textAlign:"left",fontSize:8,color:T.inkSecondary,letterSpacing:"0.1em",fontWeight:500,borderBottom:`1px solid ${T.border}`,background:T.surfaceRaised},
-  tr:{borderBottom:`1px solid ${T.border}`},
+  th:{padding:"4px 8px",textAlign:"left",fontSize:8,color:T.inkSecondary,letterSpacing:"0.1em",fontWeight:500,borderBottom:`1px solid rgba(26, 42, 62, 0.35)`,background:"rgba(19, 29, 44, 0.5)"},
+  tr:{borderBottom:`1px solid rgba(26, 42, 62, 0.25)`},
   td:{padding:"4px 8px",fontSize:10,color:T.inkPrimary},
   tdMono:{padding:"4px 8px",fontSize:10,fontFamily:F.mono,color:T.inkPrimary,textAlign:"right"},
   tdStatus:{padding:"4px 8px",fontFamily:F.mono,letterSpacing:"0.06em",fontWeight:600},
 
-  formulaBlock:{padding:"10px 14px",borderBottom:`1px solid ${T.border}`},
+  formulaBlock:{padding:"10px 14px",borderBottom:`1px solid rgba(26, 42, 62, 0.35)`},
   formulaEq:{fontFamily:F.mono,fontSize:12,color:T.data,textAlign:"center",padding:"6px 0 8px"},
   formulaCoeffs:{display:"flex",gap:8,justifyContent:"center",marginBottom:6},
-  formulaRule:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary,textAlign:"center",borderTop:`1px solid ${T.border}`,paddingTop:6,marginTop:4},
-  coeffChip:{display:"flex",flexDirection:"column",alignItems:"center",border:`1px solid ${T.border}`,padding:"3px 10px",background:T.surfaceRaised},
+  formulaRule:{fontFamily:F.mono,fontSize:8,color:T.inkSecondary,textAlign:"center",borderTop:`1px solid rgba(26, 42, 62, 0.35)`,paddingTop:6,marginTop:4},
+  coeffChip:{display:"flex",flexDirection:"column",alignItems:"center",border:`1px solid rgba(26, 42, 62, 0.35)`,padding:"3px 10px",background:"rgba(19, 29, 44, 0.5)"},
 
-  conjRow:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 12px",borderBottom:`1px solid ${T.border}`,fontFamily:F.mono,gap:6,flexWrap:"wrap",background:hexRgba(T.alert,0.04)},
+  conjRow:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 12px",borderBottom:`1px solid rgba(26, 42, 62, 0.25)`,fontFamily:F.mono,gap:6,flexWrap:"wrap",background:hexRgba(T.alert,0.04)},
   conjLeft:{display:"flex",gap:5,alignItems:"center"},
   conjRight:{display:"flex",alignItems:"center",gap:3},
 
