@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RotatingEarth from './components/ui/rotating-earth';
 
 const T = {
@@ -299,12 +300,20 @@ function OrbitTrail({ item, position }) {
 }
 
 function ContentPanel({ item, active, progress, onLaunch }) {
+  const navigate = useNavigate();
   if (!item) return null;
 
   const phaseProgress = easeInOut(range(progress, item.phase[0] + 0.012, item.phase[1] - 0.012));
   const exitFade = 1 - easeInOut(range(progress, item.phase[1] - 0.025, item.phase[1]));
   const opacity = active ? phaseProgress * exitFade : 0;
   const from = item.side === 'left' ? -32 : 32;
+
+  const pathMap = {
+    'Protocol Docs': '/docs/protocol',
+    'ZKP Ledger': '/docs/zkp-ledger',
+    'Bidding Engine': '/docs/bidding-engine',
+    'Trajectory API': '/docs/trajectory-api',
+  };
 
   return (
     <aside
@@ -335,7 +344,11 @@ function ContentPanel({ item, active, progress, onLaunch }) {
       {item.links && (
         <div className="link-grid">
           {item.links.map((link) => (
-            <button type="button" key={link}>
+            <button
+              type="button"
+              key={link}
+              onClick={() => navigate(pathMap[link] || '/')}
+            >
               {link}
             </button>
           ))}
@@ -414,8 +427,9 @@ export default function ProductLanding({ onLaunch }) {
           overflow-x: hidden;
         }
         .landing-viewport {
-          position: sticky;
+          position: fixed;
           top: 0;
+          left: 0;
           width: 100%;
           height: 100vh;
           overflow: hidden;
