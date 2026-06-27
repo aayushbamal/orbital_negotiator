@@ -866,9 +866,6 @@ export default function ProductLanding({ onLaunch }) {
 
         <div className="orbit-layer" style={{ transform: scene.orbitTransform, opacity: scene.spaceReveal }}>
           {ORBIT_OBJECTS.map((item, index) => (
-            <OrbitTrail key={`${item.id}-trail`} item={item} position={scene.objectPositions[index]} />
-          ))}
-          {ORBIT_OBJECTS.map((item, index) => (
             <OrbitMarker
               key={item.id}
               item={item}
