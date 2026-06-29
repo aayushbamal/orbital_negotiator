@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const CYAN = '#22d3ee';
-const BG = '#050810';
-const SURFACE = '#0a101d';
+const BG = '#000000';
+const SURFACE = '#050505';
 const BORDER = 'rgba(34, 211, 238, 0.1)';
 const BORDER_ACTIVE = 'rgba(34, 211, 238, 0.4)';
 const TEXT = '#c8d8e8';
@@ -265,7 +265,7 @@ export default function PageLayout({ title, subtitle, badge, children }) {
         td { color: ${TEXT}; }
         tr:hover td { color: #fff; background: rgba(34, 211, 238, 0.01); }
         code { font-family: ${MONO}; font-size: 12px; background: rgba(34,211,238,0.06); border: 1px solid rgba(34,211,238,0.12); border-radius: 4px; padding: 2px 6px; color: ${CYAN}; }
-        pre { background: #03060c; border: 1px solid ${BORDER}; border-radius: 8px; padding: 20px; overflow-x: auto; font-family: ${MONO}; font-size: 12px; color: #8eb4d4; line-height: 1.7; position: relative; }
+        pre { background: #000000; border: 1px solid ${BORDER}; border-radius: 8px; padding: 20px; overflow-x: auto; font-family: ${MONO}; font-size: 12px; color: #8eb4d4; line-height: 1.7; position: relative; }
         
         /* Layout Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -286,7 +286,7 @@ export default function PageLayout({ title, subtitle, badge, children }) {
         className="desktop-sidebar"
         style={{
           width: 280,
-          background: 'linear-gradient(180deg, #070c16 0%, #03060c 100%)',
+          background: '#000000',
           borderRight: `1px solid ${BORDER}`,
           height: '100vh',
           position: 'fixed',
@@ -306,7 +306,7 @@ export default function PageLayout({ title, subtitle, badge, children }) {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(5, 8, 16, 0.75)',
+            background: 'rgba(0, 0, 0, 0.75)',
             backdropFilter: 'blur(4px)',
             zIndex: 140
           }}
@@ -315,7 +315,7 @@ export default function PageLayout({ title, subtitle, badge, children }) {
             onClick={e => e.stopPropagation()}
             style={{
               width: 280,
-              background: '#070c16',
+              background: '#000000',
               height: '100%',
               borderRight: `1px solid ${BORDER}`,
               overflowY: 'auto'
@@ -345,7 +345,7 @@ export default function PageLayout({ title, subtitle, badge, children }) {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px 24px',
-            background: 'rgba(5, 8, 16, 0.95)',
+            background: 'rgba(0, 0, 0, 0.95)',
             backdropFilter: 'blur(12px)',
             borderBottom: `1px solid ${BORDER}`,
             position: 'sticky',

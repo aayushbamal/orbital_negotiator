@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
 
 const T = {
-  bg:"#080C12", surface:"#0E1520", surfaceRaised:"#131D2C",
-  border:"#1A2A3E", borderActive:"#254060",
-  inkPrimary:"#C8D8E8", inkSecondary:"#4A6080", inkMuted:"#1E2D42",
+  bg:"#000000", surface:"#050505", surfaceRaised:"#0d0d0d",
+  border:"rgba(91, 168, 208, 0.15)", borderActive:"rgba(91, 168, 208, 0.4)",
+  inkPrimary:"#C8D8E8", inkSecondary:"#4A6080", inkMuted:"#080808",
   data:"#5BA8D0", alert:"#E8A020", ok:"#4CAF7D", critical:"#C84040",
   sat:[
     "#5BA8D0","#9B7FD4","#4CAF7D","#E8A020","#D06080","#7BB8C8",
@@ -115,7 +115,7 @@ function buildEarthTexture(){
   const ctx=cv.getContext("2d");
   
   // Tactical deep space ocean background
-  ctx.fillStyle="#040712";
+  ctx.fillStyle="#000000";
   ctx.fillRect(0,0,W,H);
   
   // Subtle lat/lon grids in oceans

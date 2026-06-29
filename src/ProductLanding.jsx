@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import RotatingEarth from './components/ui/rotating-earth';
 
 const T = {
-  bg: '#050910',
-  surface: '#0b1420',
-  surfaceRaised: '#101d2c',
+  bg: '#000000',
+  surface: '#050505',
+  surfaceRaised: '#0d0d0d',
   border: 'rgba(91, 168, 208, 0.28)',
   inkPrimary: '#d8e9f8',
   inkSecondary: '#8ba5bd',
@@ -104,7 +104,17 @@ const ORBIT_OBJECTS = [
     description:
       'Jump into protocol docs, the ZKP ledger, bidding engine notes, trajectory APIs, research references, or the live control room.',
     specs: ['Protocol docs', 'Trajectory API', 'Research papers'],
-    links: ['Protocol Docs', 'ZKP Ledger', 'Bidding Engine', 'Trajectory API'],
+    links: [
+      'Protocol Docs',
+      'ZKP Ledger',
+      'Bidding Engine',
+      'Trajectory API',
+      'Audit Reports',
+      'Game Theory Model',
+      'SGP4 Reference',
+      'Whitepaper',
+      'Developers Page'
+    ],
   },
 ];
 
@@ -313,6 +323,11 @@ function ContentPanel({ item, active, progress, onLaunch }) {
     'ZKP Ledger': '/docs/zkp-ledger',
     'Bidding Engine': '/docs/bidding-engine',
     'Trajectory API': '/docs/trajectory-api',
+    'Audit Reports': '/research/audit-reports',
+    'Game Theory Model': '/research/game-theory',
+    'SGP4 Reference': '/research/sgp4',
+    'Whitepaper': '/research/whitepaper',
+    'Developers Page': '/developers',
   };
 
   return (
@@ -322,7 +337,7 @@ function ContentPanel({ item, active, progress, onLaunch }) {
         borderColor: item.color,
         boxShadow: `0 24px 70px rgba(0, 0, 0, 0.42), 0 0 40px ${item.color}22`,
         opacity,
-        transform: `translate3d(${mix(from, 0, phaseProgress)}px, ${mix(18, 0, phaseProgress)}px, 0)`,
+        transform: `translate3d(${mix(from, 0, phaseProgress)}px, calc(var(--panel-y-trans) + ${mix(18, 0, phaseProgress)}px), 0)`,
         pointerEvents: opacity > 0.75 ? 'auto' : 'none',
       }}
     >
@@ -336,11 +351,13 @@ function ContentPanel({ item, active, progress, onLaunch }) {
         <h2>{item.title}</h2>
       </div>
       <p>{item.description}</p>
-      <div className="spec-list">
-        {item.specs.map((spec) => (
-          <span key={spec}>{spec}</span>
-        ))}
-      </div>
+      {!item.links && (
+        <div className="spec-list">
+          {item.specs.map((spec) => (
+            <span key={spec}>{spec}</span>
+          ))}
+        </div>
+      )}
       {item.links && (
         <div className="link-grid">
           {item.links.map((link) => (
@@ -423,7 +440,7 @@ export default function ProductLanding({ onLaunch }) {
           color: ${T.inkPrimary};
           background:
             radial-gradient(circle at 50% 34%, rgba(43, 90, 120, 0.18), transparent 34%),
-            linear-gradient(180deg, ${T.bg} 0%, #02050a 100%);
+            #000000;
           overflow-x: hidden;
         }
         .landing-viewport {
@@ -433,7 +450,7 @@ export default function ProductLanding({ onLaunch }) {
           width: 100%;
           height: 100vh;
           overflow: hidden;
-          background: #02050a;
+          background: #000000;
           isolation: isolate;
         }
         .starfield,
@@ -623,9 +640,10 @@ export default function ProductLanding({ onLaunch }) {
           width: min(420px, calc(100vw - 40px));
           padding: 26px;
           border: 1px solid;
-          background: linear-gradient(135deg, rgba(13, 23, 35, 0.82), rgba(5, 10, 18, 0.58));
+          background: linear-gradient(135deg, rgba(10, 10, 10, 0.88), rgba(0, 0, 0, 0.65));
           backdrop-filter: blur(18px);
           will-change: transform, opacity;
+          --panel-y-trans: -50%;
         }
         .content-panel.is-left {
           left: clamp(20px, 7vw, 96px);
@@ -680,13 +698,13 @@ export default function ProductLanding({ onLaunch }) {
         }
         .link-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 8px;
-          margin-top: 16px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 6px;
+          margin-top: 12px;
         }
         .link-grid button {
-          padding: 10px;
-          font-size: 9px;
+          padding: 8px 4px;
+          font-size: 8px;
         }
         .launch-panel-btn {
           width: 100%;
@@ -824,6 +842,7 @@ export default function ProductLanding({ onLaunch }) {
             bottom: 28px;
             width: auto;
             padding: 20px;
+            --panel-y-trans: 0%;
           }
           .panel-title-row h2 {
             font-size: 24px;
