@@ -338,7 +338,7 @@ function ContentPanel({ item, active, progress, onLaunch }) {
         boxShadow: `0 24px 70px rgba(0, 0, 0, 0.42), 0 0 40px ${item.color}22`,
         opacity,
         transform: `translate3d(${mix(from, 0, phaseProgress)}px, calc(var(--panel-y-trans) + ${mix(18, 0, phaseProgress)}px), 0)`,
-        pointerEvents: opacity > 0.75 ? 'auto' : 'none',
+        pointerEvents: opacity > 0 ? 'auto' : 'none',
       }}
     >
       <div className="panel-kicker" style={{ color: item.color }}>
