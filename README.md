@@ -2,17 +2,49 @@
 
 > **Autonomous Low Earth Orbit (LEO) Space Traffic Management via Game-Theoretic Bidding, Adaptive Escalation & Cryptographic Audit Trails.**
 
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Three.js](https://img.shields.io/badge/Three.js-0.184-black?logo=threedotjs)
+![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&logoColor=white)
+
 ---
 
-## 🌌 Overview
+## 🌌 The Problem: Low Earth Orbit is Running Out of Room
 
-As Low Earth Orbit (LEO) expands toward 60,000+ active satellites by 2030, traditional ground-station conjunction coordination (taking 4 to 8 hours of human telemetry relays) becomes a fatal bottleneck for orbital safety.
+As Low Earth Orbit (LEO) expands toward **60,000+ active satellites by 2030**, traditional ground-station conjunction coordination (taking 4 to 8 hours of human telemetry relays and email coordination) becomes a fatal bottleneck for orbital safety. At closing velocities up to **54,000 km/h (15 km/s)**, delays lead directly to catastrophic collisions (Kessler Syndrome).
 
-**Orbital Negotiator** is a decentralized, on-orbit Space Traffic Management (STM) protocol that enables spacecraft to:
-1. **Detect Close Approaches**: Compute spatial proximity and collision probability ($P_c$) in real-time.
-2. **Execute Autonomous Game-Theoretic Bidding**: Resolve right-of-way encounters via deterministic Nash equilibrium scoring in **$< 50\text{ms}$**.
-3. **Handle Dynamic Aerospace Emergencies**: Mitigate multi-satellite cascade conjunctions, solar storms (CME), and hyper-velocity debris swarms.
-4. **Preserve Cryptographic Integrity**: Commit all maneuver agreements to an immutable, tamper-evident SHA-256 / zk-SNARK verification ledger with instant JSON and Word `.doc` report exports.
+```
+       TODAY'S MANUAL PARADOX                         ORBITAL NEGOTIATOR'S APPROACH
+┌──────────────────────────────────────┐       ┌──────────────────────────────────────┐
+│ • Radar detects conjunction on Earth │       │ • Satellites evaluate risk locally   │
+│ • Ground teams email each other      │  vs   │ • Algorithmic, zero-human bidding    │
+│ • Hours/days of human latency        │       │ • Microsecond deterministic resolve  │
+│ • Secret fuel data cannot be shared  │       │ • Zero-Knowledge verifiable ledger   │
+└──────────────────────────────────────┘       └──────────────────────────────────────┘
+```
+
+* **The Communication Lag:** Satellite operators rely on ground stations that spacecraft only pass over once every 45 to 90 minutes. If an emergency conjunction arises 30 minutes before closest approach, commands cannot reach the satellite in time.
+* **The Coordination Bottleneck:** SpaceX Starlink alone executes **over 140 avoidance maneuvers every day** (50,000+ burns every 6 months). Ground teams cannot scale to handle millions of daily warning alerts manually.
+* **The Secret Telemetry Dilemma:** Commercial operators and defense satellites refuse to reveal confidential propellant reserves or classified mission priorities to competitors.
+
+**Orbital Negotiator** solves this by turning collision avoidance into an autonomous, deterministic, privacy-preserving negotiation protocol.
+
+---
+
+## 💡 How It Works (The 4-Step Protocol)
+
+```mermaid
+flowchart LR
+    A[1. Conjunction Horizon] -->|Distance < Safety Threshold| B[2. Deterministic Bidding]
+    B -->|Lower Cost Maneuvers| C[3. Trajectory Resolution]
+    C --> D[4. Cryptographic Ledger]
+```
+
+1. **Detect Close Approaches:** Compute spatial proximity and collision probability ($P_c$) in real-time over forward lookahead horizons.
+2. **Execute Autonomous Bidding:** Resolve right-of-way encounters via deterministic Nash equilibrium scoring in **$< 50\text{ms}$**.
+3. **Handle Aerospace Emergencies:** Mitigate multi-satellite cascade conjunctions, solar radiation storms (CME), and hyper-velocity debris swarms with adaptive thrust bursts.
+4. **Preserve Cryptographic Integrity:** Commit all maneuver agreements to an immutable, tamper-evident SHA-256 / zk-SNARK verification ledger with instant JSON and Word `.doc` report exports.
 
 ---
 
@@ -20,22 +52,22 @@ As Low Earth Orbit (LEO) expands toward 60,000+ active satellites by 2030, tradi
 
 Right-of-way is evaluated autonomously over peer-to-peer Inter-Satellite Crosslinks (ISL) using a deterministic cost-minimization bidding function:
 
-$$C_\text{bid} = \alpha \cdot \left(\frac{P_c \times 100}{\text{Propellant}}\right) + \beta \cdot \text{MissionPriority} + \gamma \cdot \text{RecoveryTime}$$
+$$C_{\text{bid}} = \alpha \cdot \left(\frac{P_c \cdot 100}{\max(M_{\text{prop}}, 0.01)}\right) + \beta \cdot P_{\text{miss}} + \gamma \cdot T_{\text{recovery}}$$
 
 ### ⚙️ Protocol Parameters:
-* **$\alpha = 1.2$ ($\Delta v$ Fuel Scarcity Penalty)**: Prevents fuel-constrained satellites from early mission termination by forcing propellant-rich assets to yield.
-* **$\beta = 0.8$ (Mission Criticality Weight)**: Asserts right-of-way for strategic, crewed, or high-value defense missions.
-* **$\gamma = 0.5$ (Recovery Downtime Weight)**: Minimizes constellation disruption and payload thermal recovery time.
+* **$\alpha = 1.2$ ($\Delta v$ Fuel Scarcity Penalty):** Prevents fuel-constrained satellites from early mission termination by forcing propellant-rich assets to yield.
+* **$\beta = 0.8$ (Mission Criticality Weight):** Asserts right-of-way for strategic, crewed, or high-value defense missions.
+* **$\gamma = 0.5$ (Recovery Downtime Weight):** Minimizes constellation disruption and payload thermal recovery time.
 
 ### ⚖️ The Equilibrium Rule:
-* **Winning Spacecraft (Higher $C_\text{bid}$)**: Preserves its nominal trajectory without burning propellant.
-* **Yielding Spacecraft (Lower $C_\text{bid}$)**: Executes an orthogonal, fuel-optimal Collision Avoidance Maneuver (CAM).
+* **Winning Spacecraft (Higher $C_{\text{bid}}$):** Preserves its nominal trajectory without burning propellant.
+* **Yielding Spacecraft (Lower $C_{\text{bid}}$):** Executes an orthogonal, fuel-optimal Collision Avoidance Maneuver (CAM).
 
 ---
 
 ## ⚡ Adaptive Multi-Tier Escalation Architecture
 
-Orbital Negotiator automatically derives sensible safety thresholds based on live telemetry context while keeping them operator-editable:
+Orbital Negotiator automatically derives safety thresholds based on live telemetry context while keeping them operator-tunable:
 
 | Escalation Tier | Trigger Criteria | Autonomous Action Protocol |
 | :--- | :--- | :--- |
@@ -47,55 +79,132 @@ Orbital Negotiator automatically derives sensible safety thresholds based on liv
 
 ## 🚨 Emergency Collision Scenarios
 
-* **Simultaneous Multi-Satellite Cascade Conjunction**: Resolves 6-satellite convergent cluster collisions via concurrent pairwise auctions without circular yield deadlocks.
-* **Solar Radiation Storm (CME)**: Fleet-wide Tier 3 emergency escalation with geomagnetic navigation compensation.
-* **Hyper-Velocity Debris Swarm**: Rapid $1.8\times$ cross-track thrust bursts to evacuate orbital shells.
-* **Crewed / Strategic Defense Insertion**: Maximum priority asserting right-of-way across all intersecting planes.
+* **Simultaneous Multi-Satellite Cascade Conjunction:** Resolves 6-satellite convergent cluster collisions via concurrent pairwise auctions without circular yield deadlocks.
+* **Solar Radiation Storm (CME):** Fleet-wide Tier 3 emergency escalation with geomagnetic navigation compensation.
+* **Hyper-Velocity Debris Swarm:** Rapid $1.8\times$ cross-track thrust bursts to evacuate orbital shells.
+* **Crewed / Strategic Defense Insertion:** Maximum priority asserting right-of-way across all intersecting planes.
 
 ---
 
 ## 📋 Comprehensive Reporting & Export Formats
 
-* **📄 Microsoft Word (`.doc`) Systematic Audit Report**: Formatted aerospace audit with mathematical formulas, executive summaries, full 20-satellite telemetry tables, and chronological maneuver history.
-* **📥 Cryptographic Ledger (`.json`)**: Machine-readable JSON export with SHA-256 state roots, sequence IDs, and verification flags.
-* **🚨 Emergency Incident Report (`.json`)**: Instant post-incident reports accessible during and after emergency situations.
+* **📄 Microsoft Word (`.doc`) Systematic Audit Report:** Formatted aerospace audit with mathematical formulas, executive summaries, full 20-satellite telemetry tables, and chronological maneuver history.
+* **📥 Cryptographic Ledger (`.json`):** Machine-readable JSON export with SHA-256 state roots, sequence IDs, and verification flags.
+* **🚨 Emergency Incident Report (`.json`):** Instant post-incident reports accessible during and after emergency situations.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Key Features
 
-* **Frontend**: React 19, Vite 8, Tailwind CSS
-* **3D Visualization**: Three.js (High-performance 60 FPS Earth sphere with vector land glows, atmospheric shader, night city lights, and dynamic orbital path prediction)
-* **Orbital Mechanics**: Deterministic SGP4 trajectory propagator with cross-track de-confliction
-* **Backend Ready**: Supabase (PostgreSQL, Realtime WebSockets, Storage)
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/aayushbamal/orbital_negotiator.git
-cd orbital_negotiator
-```
-
-### 2. Install Dependencies
-```bash
-npm install
-```
-
-### 3. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:5173/simulator](http://localhost:5173/simulator) in your browser.
-
-### 4. Build for Production
-```bash
-npm run build
-```
+* **🎮 Interactive 3D Digital Twin:** Real-time WebGL Earth simulation built with Three.js, featuring procedural Day/Night shaders, metropolitan city lights, and specular ocean reflections.
+* **🛰️ Real-Time Telemetry & Tracking:** Live tracking of orbital parameters (Inclination, RAAN, Semi-Major Axis, Altitude, Latitude, Longitude, Phase).
+* **🚨 Conjunction Warning Beams:** Dynamic pulsing visual vectors connecting satellites entering close-approach horizons.
+* **⚡ Deterministic Microsecond Latency:** Zero-LLM, pure mathematical evaluation guaranteeing reproducible, instant decisions.
+* **📜 Live Cryptographic Audit Ledger:** Real-time stream of signed transaction receipts and SHA-256 verification hashes.
+* **⏱️ Simulation Time-Warp:** Variable playback speed ($1\times \to 5\times$), orbit trail toggles, predictive path visualizers, and satellite camera locks.
+* **📚 Complete Documentation Suite:** Built-in Whitepaper, Bidding Engine breakdown, Zero-Knowledge Proof (ZKP) specs, SGP4 references, and Trajectory API docs.
 
 ---
 
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## 📁 Repository Structure
+
+```
+orbital_negotiator/
+├── index.html                  # HTML entry point
+├── package.json                # Project dependencies and build scripts
+├── tsconfig.json               # TypeScript configuration
+├── vite.config.js              # Vite configuration with Tailwind integration
+├── public/                     # Static assets and textures
+└── src/
+    ├── App.jsx                 # Top-level view router (Landing vs. Simulator)
+    ├── App.css                 # Global styling rules
+    ├── index.css               # Tailwind CSS imports & theme variables
+    ├── ProductLanding.jsx      # Interactive product landing page with scroll animations
+    ├── OrbitalNegotiator.jsx   # Core 3D orbital visualizer, physics loop & HUD
+    ├── OrbitalModel.jsx        # Modular 3D Three.js canvas & satellite mesh engine
+    ├── Hero.jsx                # WebGL custom background shader
+    ├── components/
+    │   └── ui/
+    │       └── rotating-earth.jsx # Procedural 3D Earth canvas component
+    └── pages/
+        ├── PageLayout.jsx      # Documentation layout wrapper
+        ├── Whitepaper.jsx      # Scientific and architectural whitepaper
+        ├── BiddingEngine.jsx   # Detailed Game-Theoretic math & formulas
+        ├── ZKPLedger.jsx       # Zero-Knowledge audit ledger specifications
+        ├── SGP4Reference.jsx   # Astrodynamics & SGP4 coordinate references
+        ├── TrajectoryAPI.jsx   # REST/WebSocket API endpoints & schema
+        ├── AuditReports.jsx    # Regulatory compliance report generator
+        └── Developers.jsx      # Developer integration guide & SDK notes
+```
+
+---
+
+## 🚀 Quickstart & Local Setup
+
+### Prerequisites
+* **Node.js**: v18.0.0 or higher
+* **npm** or **yarn** / **pnpm**
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/aayushbamal/orbital_negotiator.git
+   cd orbital_negotiator
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the local development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in your browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000) or [http://localhost:5173](http://localhost:5173) to explore the interactive landing page and live 3D orbital simulator.
+
+5. **Build for production:**
+   ```bash
+   npm run build
+   npm run preview
+   ```
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Frontend Framework** | React 19 + Vite 8 | Ultra-fast build toolchain & component architecture |
+| **3D Graphics** | Three.js + WebGL | High-performance orbital scene, procedural textures & particle trails |
+| **Styling & UI** | TailwindCSS 4 + Radix UI + Lucide | Futuristic dark-space glassmorphism UI & responsive typography |
+| **Animation** | Framer Motion | Smooth phase transitions and scroll animations |
+| **Cryptography** | Web Crypto API (`crypto.subtle`) | Client-side SHA-256 state hashing and verifiable receipts |
+| **Astrodynamics (Ext)** | `satellite.js` / SGP4 | Keplerian & SGP4 coordinate transformations |
+
+---
+
+## 🗺️ Roadmap & Industrial Vision
+
+- [x] Interactive 3D Three.js orbital digital twin with procedural Earth rendering.
+- [x] Deterministic game-theoretic cost-to-maneuver ($C_{\text{bid}}$) negotiation engine.
+- [x] Live SHA-256 cryptographic audit ledger stream & report downloads.
+- [ ] **Live SGP4 & CelesTrak Ingestion:** Stream 10,000+ active satellites directly from Space-Track/CelesTrak.
+- [ ] **Zero-Knowledge Circuits (zk-SNARKs):** Circom/SnarkJS circuits to verify bids without revealing confidential fuel/mission data.
+- [ ] **CCSDS OCM/CDM Export:** Export standardized JSON/XML compliance packages for FAA, Space Force, and ESA regulators.
+- [ ] **VCG Mechanism & Credit Exchange:** Automated economic settlement and propellant compensation between operators.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  Built with 🛰️ for the future of sustainable space exploration and autonomous traffic management.
+</p>
