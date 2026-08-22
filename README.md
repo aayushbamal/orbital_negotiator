@@ -2,11 +2,14 @@
 
 > **Autonomous Low Earth Orbit (LEO) Space Traffic Management via Game-Theoretic Bidding, Adaptive Escalation & Cryptographic Audit Trails.**
 
+[![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel&logoColor=white)](https://orbital-negotiator.vercel.app)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Three.js](https://img.shields.io/badge/Three.js-0.184-black?logo=threedotjs)
 ![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?logo=tailwind-css&logoColor=white)
+
+**🌐 Live Deployment:** [https://orbital-negotiator.vercel.app](https://orbital-negotiator.vercel.app)
 
 ---
 
@@ -32,19 +35,38 @@ As Low Earth Orbit (LEO) expands toward **60,000+ active satellites by 2030**, t
 
 ---
 
-## 💡 How It Works (The 4-Step Protocol)
+## 🔄 Protocol Execution Workflow
+
+The complete end-to-end execution lifecycle from conjunction detection to cryptographic audit commitment:
 
 ```mermaid
-flowchart LR
-    A[1. Conjunction Horizon] -->|Distance < Safety Threshold| B[2. Deterministic Bidding]
-    B -->|Lower Cost Maneuvers| C[3. Trajectory Resolution]
-    C --> D[4. Cryptographic Ledger]
-```
+flowchart TD
+    subgraph Phase1["1. Spatial Conjunction & Hazard Screening"]
+        A[Live Orbit Telemetry / SGP4 State Vectors] --> B{Conjunction Screening<br/>Distance < 5 km & Pc > 10⁻⁴}
+        B -- No Hazard --> A
+        B -- Hazard Detected --> C[Trigger Autonomous P2P Crosslink Handshake]
+    end
 
-1. **Detect Close Approaches:** Compute spatial proximity and collision probability ($P_c$) in real-time over forward lookahead horizons.
-2. **Execute Autonomous Bidding:** Resolve right-of-way encounters via deterministic Nash equilibrium scoring in **$< 50\text{ms}$**.
-3. **Handle Aerospace Emergencies:** Mitigate multi-satellite cascade conjunctions, solar radiation storms (CME), and hyper-velocity debris swarms with adaptive thrust bursts.
-4. **Preserve Cryptographic Integrity:** Commit all maneuver agreements to an immutable, tamper-evident SHA-256 / zk-SNARK verification ledger with instant JSON and Word `.doc` report exports.
+    subgraph Phase2["2. Game-Theoretic Auction Engine"]
+        C --> D1["Satellite A: Compute C_bid_A<br/>α(Pc/Fuel_A) + β(Priority_A) + γ(Recovery_A)"]
+        C --> D2["Satellite B: Compute C_bid_B<br/>α(Pc/Fuel_B) + β(Priority_B) + γ(Recovery_B)"]
+        D1 & D2 --> E[Decentralized Payoff Matrix & Comparison]
+    end
+
+    subgraph Phase3["3. Trajectory Resolution & Maneuver Execution"]
+        E -->|C_bid_A >= C_bid_B| F1[Satellite A: Retain Nominal Orbit]
+        E -->|C_bid_A < C_bid_B| F2[Satellite A: Execute Optimal Δv Burn]
+        E -->|C_bid_B < C_bid_A| G1[Satellite B: Execute Optimal Δv Burn]
+        E -->|C_bid_B >= C_bid_A| G2[Satellite B: Retain Nominal Orbit]
+    end
+
+    subgraph Phase4["4. Cryptographic Audit Trail & Digital Twin Sync"]
+        F1 & F2 & G1 & G2 --> H[Format Standardized Agreement JSON]
+        H --> I[Compute SHA-256 State Root Hash & Signatures]
+        I --> J[Commit to Immutable Append-Only Audit Ledger]
+        J --> K[Live Update 3D Three.js Visualizer & Telemetry HUD]
+    end
+```
 
 ---
 
@@ -114,6 +136,7 @@ orbital_negotiator/
 ├── package.json                # Project dependencies and build scripts
 ├── tsconfig.json               # TypeScript configuration
 ├── vite.config.js              # Vite configuration with Tailwind integration
+├── vercel.json                 # Vercel SPA routing and deployment configuration
 ├── public/                     # Static assets and textures
 └── src/
     ├── App.jsx                 # Top-level view router (Landing vs. Simulator)
@@ -184,6 +207,7 @@ orbital_negotiator/
 | **Animation** | Framer Motion | Smooth phase transitions and scroll animations |
 | **Cryptography** | Web Crypto API (`crypto.subtle`) | Client-side SHA-256 state hashing and verifiable receipts |
 | **Astrodynamics (Ext)** | `satellite.js` / SGP4 | Keplerian & SGP4 coordinate transformations |
+| **Deployment** | Vercel | Production static web distribution & continuous deployment |
 
 ---
 
