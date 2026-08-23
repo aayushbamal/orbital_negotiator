@@ -15,9 +15,8 @@
 * 🚀 **Interactive 3D Digital Twin & Simulator:** [https://orbital-negotiator.vercel.app](https://orbital-negotiator.vercel.app)
 * 📄 **Scientific Whitepaper:** [https://orbital-negotiator.vercel.app/research/whitepaper](https://orbital-negotiator.vercel.app/research/whitepaper)
 * 🧮 **Game-Theoretic Bidding Engine:** [https://orbital-negotiator.vercel.app/docs/bidding-engine](https://orbital-negotiator.vercel.app/docs/bidding-engine)
-* 🔐 **ZKP Cryptographic Ledger:** [https://orbital-negotiator.vercel.app/zkp-ledger](https://orbital-negotiator.vercel.app/zkp-ledger)
-* 📋 **Audit & Regulatory Reports:** [https://orbital-negotiator.vercel.app/audit-reports](https://orbital-negotiator.vercel.app/audit-reports)
-* 🛰️ **Astrodynamics & Trajectory API:** [https://orbital-negotiator.vercel.app/trajectory-api](https://orbital-negotiator.vercel.app/trajectory-api)
+* 🔐 **ZKP Audit Ledger:** [https://orbital-negotiator.vercel.app/docs/zkp-ledger](https://orbital-negotiator.vercel.app/docs/zkp-ledger)
+* 📋 **Audit Compilation Report:** [https://orbital-negotiator.vercel.app/research/audit-reports](https://orbital-negotiator.vercel.app/research/audit-reports)
 
 ---
 
